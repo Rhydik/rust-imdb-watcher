@@ -13,9 +13,6 @@ pub struct Movies {
     rating: String,
 }
 
-//write a scraper that gets the top 250 movies from IMDB
-//and returns a list of movies with their id, title and rating
-
 async fn get_top250() -> Result<Vec<Movies>, reqwest::Error> {
     let res = reqwest::get(TOP250_URL).await?;
     let mut result = Vec::new();
@@ -28,7 +25,12 @@ async fn get_top250() -> Result<Vec<Movies>, reqwest::Error> {
             .unwrap()
             .text();
         let rating = node
-            .find(Class(r#"ratingColumn"#).descendant(Name("div")).descendant(Class("inline")).descendant(Class("seen")))
+            .find(
+                Class(r#"ratingColumn"#)
+                    .descendant(Name("div"))
+                    .descendant(Class("inline"))
+                    .descendant(Class("seen")),
+            )
             .next()
             .unwrap()
             .text();
@@ -43,50 +45,6 @@ async fn get_top250() -> Result<Vec<Movies>, reqwest::Error> {
 
     Ok(result)
 }
-
-// async fn get_top250() -> Result<Vec<Movies>, reqwest::Error> {
-//     let res = reqwest::get(TOP250_URL).await?;
-//     let mut result = Vec::new();
-
-//     let html = res.text().await?;
-
-//     let scraper = Html::parse_document(&html);
-
-//     let title_selector = Selector::parse(r#"td.titleColumn"#).unwrap();
-//     let rating_selector = Selector::parse(r#"td.ratingColumn"#).unwrap();
-//     let mut id = 0;
-//     //get the title and rating of each movie
-
-//     let mut title_list = Vec::new();
-//     let mut rating_list = Vec::new();
-
-//     for element in scraper.select(&title_selector) {
-//         let title = element.select(&Selector::parse(r#"a"#).unwrap()).next().unwrap().inner_html();
-//         title_list.push(title);
-//     }
-
-//     for element in scraper.select(&rating_selector) {
-
-//         let rating = element.select(&Selector::parse(r#"strong"#).unwrap()).next().unwrap().inner_html();
-//         //create a list of ratings
-//         rating_list.push(rating);
-
-//         rating_list.push(rating);
-//     }
-
-//     //take title list and rating list and create a list of movies
-//     for i in 0..title_list.len() {
-//         id += 1;
-//         let movie = Movies {
-//             id,
-//             title: title_list[i].to_string(),
-//             rating: rating_list[i].to_string(),
-//         };
-//         result.push(movie);
-//     }
-
-//     Ok(result)
-// }
 
 #[get("/movies")]
 pub async fn get_movies() -> Json<Vec<Movies>> {
